@@ -50,9 +50,9 @@ def create_item(href,
                           if key.startswith("readers"))
         if reader_key not in ("readers.las", "readers.copc"):  # add COPC
             # TODO support other formats
-        raise Exception(
+            raise Exception(
             "stactools currently only support las and copc pointclouds, not {}".format(reader_key)
-        )
+            )
     except StopIteration:
         raise Exception("could not find reader key in pipeline metadata")
     metadata = metadata[reader_key]

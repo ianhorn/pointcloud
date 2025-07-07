@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
+- `readers.copc` as a compatible format ([#10](https://github.com/stactools-packages/pointcloud/pull/10))
 - `a_srs` to specify the output SRS ([#8](https://github.com/stactools-packages/pointcloud/pull/8))
 
 ### Fixed

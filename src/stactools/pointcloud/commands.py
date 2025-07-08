@@ -14,14 +14,13 @@ def create_pointcloud_command(cli):
     pointclouds.
     """
 
-    @cli.group("pointcloud",
-               short_help=("Commands for working with "
-                           "pointclouds."))
+    @cli.group("pointcloud", short_help=("Commands for working with " "pointclouds."))
     def pointcloud():
         pass
 
-    @pointcloud.command("create-item",
-                        short_help="Create a STAC Item from a las or laz file")
+    @pointcloud.command(
+        "create-item", short_help="Create a STAC Item from a las or laz file"
+    )
     @click.argument("href")
     @click.argument("dst")
     @click.option("-r", "--reader", help="Override the default PDAL reader.")
@@ -44,12 +43,15 @@ def create_pointcloud_command(cli):
     @click.option(
         "-a",
         "--a_srs",
-        help=("Projection string for reprojecting native coordinates to "
-              "create a lat/lon geom for the STAC item"),
+        help=(
+            "Projection string for reprojecting native coordinates to "
+            "create a lat/lon geom for the STAC item"
+        ),
         default="EPSG:4326",
     )
-    def create_item_command(href, dst, reader, pointcloud_type, a_srs,
-                            compute_statistics, providers):
+    def create_item_command(
+        href, dst, reader, pointcloud_type, a_srs, compute_statistics, providers
+    ):
         """Creates a STAC Item based on the header of a pointcloud.
 
         HREF is the pointcloud file.

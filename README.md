@@ -41,5 +41,5 @@ stactools package for Pointcloud data.
 LAZ archive:
 
 ```bash
-stac pointcloud create-item https://kyfromabove.s3.us-west-2.amazonaws.com/elevation/PointCloud/Phase3/N014E303_LAS_Phase3.copz.laz .
+stac pointcloud create-item https://kyfromabove.s3.us-west-2.amazonaws.com/elevation/PointCloud/Phase3/N014E303_LAS_Phase3.copc.laz .
 ```

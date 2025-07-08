@@ -11,12 +11,14 @@ from shapely.geometry import box, mapping
 from stactools.core.projection import reproject_shape
 
 
-def create_item(href,
-                pdal_reader=None,
-                compute_statistics=False,
-                pointcloud_type="lidar",
-                additional_providers=None,
-                a_srs="EPSG:4326"):
+def create_item(
+    href,
+    pdal_reader=None,
+    compute_statistics=False,
+    pointcloud_type="lidar",
+    additional_providers=None,
+    a_srs="EPSG:4326",
+):
     """Creates a STAC Item from a point cloud.
 
     Args:
@@ -38,20 +40,17 @@ def create_item(href,
         reader = href
     # This is the best way I can find right now to get header information
     # from PDAL-python without reading the whole file.
-    pipeline = Pipeline(
-        json.dumps([reader, {
-            "type": "filters.head",
-            "count": 0
-        }]))
+    pipeline = Pipeline(json.dumps([reader, {"type": "filters.head", "count": 0}]))
     pipeline.execute()
     metadata = pipeline.metadata["metadata"]
     try:
-        reader_key = next(key for key in metadata.keys()
-                          if key.startswith("readers"))
+        reader_key = next(key for key in metadata.keys() if key.startswith("readers"))
         if reader_key not in ("readers.las", "readers.copc"):  # add COPC
             # TODO support other formats
             raise Exception(
-            "stactools currently only support las and copc pointclouds, not {}".format(reader_key)
+                "stactools currently only support las and copc pointclouds, not {}".format(
+                    reader_key
+                )
             )
     except StopIteration:
         raise Exception("could not find reader key in pipeline metadata")
@@ -61,22 +60,18 @@ def create_item(href,
     id = os.path.splitext(os.path.basename(href))[0]
     encoding = os.path.splitext(href)[1][1:]
     spatialreference = CRS.from_string(metadata["spatialreference"])
-    original_bbox = box(metadata["minx"], metadata["miny"], metadata["maxx"],
-                        metadata["maxy"])
-    geometry = reproject_shape(spatialreference,
-                               a_srs,
-                               original_bbox,
-                               precision=6)
+    original_bbox = box(
+        metadata["minx"], metadata["miny"], metadata["maxx"], metadata["maxy"]
+    )
+    geometry = reproject_shape(spatialreference, a_srs, original_bbox, precision=6)
     bbox = geometry.bounds
-    dt = datetime.datetime(
-        metadata["creation_year"], 1,
-        1) + datetime.timedelta(metadata["creation_doy"] - 1)
+    dt = datetime.datetime(metadata["creation_year"], 1, 1) + datetime.timedelta(
+        metadata["creation_doy"] - 1
+    )
 
-    item = Item(id=id,
-                geometry=mapping(geometry),
-                bbox=bbox,
-                datetime=dt,
-                properties={})
+    item = Item(
+        id=id, geometry=mapping(geometry), bbox=bbox, datetime=dt, properties={}
+    )
 
     if additional_providers is not None:
         item.common_metadata.providers.extend(additional_providers)
@@ -102,7 +97,7 @@ def create_item(href,
     # computing a true boundary can be (usually is) expensive. Maybe if we run
     # stats we do a true density, but when we don't run stats we do the
     # quick-and-dirty? But then densities mean different things depending on
-    # the processing history of the STAC file, which seems inconsistant.
+    # the processing history of the STAC file, which seems inconsistent.
     if compute_statistics:
         pointcloud_ext.statistics = _compute_statistics(reader)
 

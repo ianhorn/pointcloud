@@ -48,7 +48,7 @@ def create_item(
         if reader_key not in ("readers.las", "readers.copc"):  # add COPC
             # TODO support other formats
             raise Exception(
-                "stactools currently only support las and copc pointclouds, not {}".format(
+                "stactools currently only support las & copc pointclouds, not {}".format(
                     reader_key
                 )
             )

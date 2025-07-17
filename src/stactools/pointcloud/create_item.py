@@ -9,8 +9,10 @@ import os
 import json
 import pandas as pd
 import concurrent.futures
-
 from stactools.pointcloud.stac import create_item
+
+# set cpu for max workers
+# max_workers = os.cpu_count() + 5  # 10 + 5 = 15
 
 # Configuration
 file_format = "laz"
@@ -45,7 +47,7 @@ def create_laz_item(url):
         print(f"Error processing {url}: {e}")
 
 def main():
-    urls = df['url'].tolist()
+    urls = df['aws_url'].tolist()
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
         executor.map(create_laz_item, urls)

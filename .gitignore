@@ -5,6 +5,7 @@ __pycache__/
 misc
 laz-phase1
 .DS_Store
+items
 
 # C extensions
 *.so

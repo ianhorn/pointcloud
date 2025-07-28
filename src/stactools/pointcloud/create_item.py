@@ -5,38 +5,42 @@ import concurrent.futures
 from stactools.pointcloud.stac import create_item
 from tqdm import tqdm
 
-file_format = "laz"
-phase = "phase2"
+# Set paths for your machine
+csv_path = "C:/Users/ian.horn/Documents/stac-repos/pointcloud/csv/laz-phase2.csv"
+out_dir = "C:/Users/ian.horn/Documents/stac-repos/pointcloud/items/laz-phase2"
 
-csv_path = f'C:/Users/Ian.Horn/Documents/stac-repos/pointcloud/csv/{file_format}-{phase}.csv'
-out_dir = f'C:/Users/Ian.Horn/Documents/stac-repos/pointcloud/items/{file_format}-{phase}'
+# Ensure output directory exists
 os.makedirs(out_dir, exist_ok=True)
 
+# Load paths from CSV
 df = pd.read_csv(csv_path)
+paths = df['aws_url'].dropna().tolist()  # Use 'aws_url' column
 
-
-def create_laz_item(url):
-    fname = os.path.basename(url)
-    json_name = os.path.splitext(fname)[0] + ".json"
-    outfile = os.path.join(out_dir, json_name)
-
+# Safe wrapper for item creation
+def safe_create_item(las_path):
     try:
-        if not os.path.exists(outfile):
-            item = create_item(url)
-            with open(outfile, 'w') as f:
-                json.dump(item.to_dict(), f, indent=2)
-            print(f"✔ {item.id}")
-        else:
-            print(f"⏩ Skipping {json_name}")
+        print(f"Processing: {las_path}")  # helpful if freezing
+        item = create_item(las_path)
+        out_path = os.path.join(out_dir, f"{item.id}.json")
+        with open(out_path, "w") as f:
+            f.write(json.dumps(item.to_dict(), indent=2))
+        return {"success": True, "id": item.id}
     except Exception as e:
-        print(f"❌ Error for {url}: {e}")
+        return {"success": False, "path": las_path, "error": str(e)}
 
+# Run in parallel with processes
+results = []
+with concurrent.futures.ProcessPoolExecutor() as executor:
+    for result in tqdm(executor.map(safe_create_item, paths), total=len(paths)):
+        results.append(result)
 
-def main():
-    urls = df['aws_url'].tolist()
-    with concurrent.futures.ProcessPoolExecutor(max_workers=os.cpu_count()) as executor:
-        list(tqdm(executor.map(create_laz_item, urls), total=len(urls)))
+# Summarize results
+successes = [r for r in results if r['success']]
+failures = [r for r in results if not r['success']]
 
-
-if __name__ == "__main__":
-    main()
+print(f"\n✅ Created {len(successes)} items")
+print(f"❌ Failed on {len(failures)} items")
+if failures:
+    print("\nSome failures:")
+    for fail in failures[:5]:  # show only first 5
+        print(f" - {fail['path']}: {fail['error']}")
